@@ -1,0 +1,9 @@
+RELATÓRIO TÉCNICO DE BASELINE - SEMANA 1
+----------------------------------------
+Sistema: Painel Analítico ENEM 2025 (SQLite)
+Operação: Agregação analítica e cálculo de médias por UF (GROUP BY)
+Tamanho dos Dados: 1,048,575 registros (56.34 MB)
+Ambiente: AMD64 Family 25 Model 80 Stepping 0, AuthenticAMD | Windows 11
+Amostras (N): 1000
+Tempo Total: 788.6199 s
+Tempo Médio (Baseline): 788.62 ms por operação
