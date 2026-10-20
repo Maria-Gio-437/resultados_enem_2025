@@ -45,7 +45,7 @@ A aba **"Estatísticas por Região"** possui 4 comportamentos:
 
 ### Pré-requisitos
 * Python 3.10 ou superior instalado.
-* Arquivo `enem_2025.db` presente na raiz do diretório.
+* Arquivo `enem_2025.db` presente na pasta dados.
 
 ### Executando a Aplicação
 ```bash

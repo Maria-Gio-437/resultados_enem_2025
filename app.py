@@ -1,15 +1,18 @@
 import sqlite3
 import tkinter as tk
+import os
 from tkinter import ttk, messagebox
 
-DB_NAME = "enem_2025.db"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "dados", "enem_2025.db")
+
 COR_PRIMARIA = "#2b3980"  # Azul escuro
 COR_BRANCO = "#ffffff"    # Branco
 COR_FUNDO = "#f4f6fa"     # Cinza-azulado muito suave para contraste visual
 COR_HOVER = "#1f2a63"     # Azul sutilmente mais escuro para foco
 
 def get_db_connection():
-    return sqlite3.connect(DB_NAME)
+    return sqlite3.connect(DB_PATH)
 
 class EnemApp:
     def __init__(self, root):

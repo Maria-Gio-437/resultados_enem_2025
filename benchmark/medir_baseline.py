@@ -3,12 +3,11 @@ import time
 import os
 import platform
 
-DB_NAME = "enem_2025.db"
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+RAIZ_PROJETO = os.path.dirname(SCRIPT_DIR)
+DB_PATH = os.path.join(RAIZ_PROJETO, "dados", "enem_2025.db")
+ARQUIVO_SAIDA = os.path.join(SCRIPT_DIR, "baseline_dados.txt")
 
-# RECOMENDAÇÃO DE ITERAÇÕES:
-# Como se trata de agregação analítica pesada sobre milhares/milhões de linhas,
-# rodar 1000 vezes pode levar de 30 a 60 minutos dependendo da CPU.
-# Sugestão: defina 100 para um teste inicial ou 1000 se sua máquina for muito rápida.
 N_EXECUCOES = 1000
 
 QUERY_OPERACAO_QUE_DOI = """
@@ -27,13 +26,13 @@ ORDER BY SG_UF_PROVA ASC;
 """
 
 def obter_metadados():
-    if not os.path.exists(DB_NAME):
-        raise FileNotFoundError(f"Arquivo '{DB_NAME}' não encontrado no diretório atual.")
+    if not os.path.exists(DB_PATH):
+        raise FileNotFoundError(f"Arquivo de banco de dados não encontrado em: '{DB_PATH}'")
     
-    tamanho_bytes = os.path.getsize(DB_NAME)
+    tamanho_bytes = os.path.getsize(DB_PATH)
     tamanho_mb = tamanho_bytes / (1024 * 1024)
     
-    conn = sqlite3.connect(DB_NAME)
+    conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
     cur.execute("SELECT COUNT(*) FROM resultados_enem;")
     total_linhas = cur.fetchone()[0]
@@ -54,13 +53,13 @@ def executar_medicao():
     meta = obter_metadados()
     print(f"Sistema Operacional : {meta['so']}")
     print(f"Processador         : {meta['cpu']}")
-    print(f"Base de Dados       : {DB_NAME} ({meta['tamanho_mb']} MB)")
+    print(f"Base de Dados       : {DB_PATH} ({meta['tamanho_mb']} MB)")
     print(f"Volume Analisado    : {meta['total_linhas']:,} registros")
     print(f"Número de Amostras  : N = {N_EXECUCOES}")
     print("-" * 65)
     print("Cronometrando a operação analítica (Full Table Scan)...")
     
-    conn = sqlite3.connect(DB_NAME)
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
     # Aquecimento de 1 ciclo (warm-up) para inicialização de buffers
@@ -73,7 +72,6 @@ def executar_medicao():
         cursor.execute(QUERY_OPERACAO_QUE_DOI)
         _ = cursor.fetchall()
         
-        # Feedback visual de progresso
         if i % (max(1, N_EXECUCOES // 10)) == 0:
             print(f"  -> Progresso: {i}/{N_EXECUCOES} iterações concluídas...")
             
@@ -91,19 +89,19 @@ def executar_medicao():
     print(f"Iterações (N)      : {N_EXECUCOES}")
     print("=" * 65)
 
-    # Gravação do relatório técnico para a entrega
-    with open("baseline_dados.txt", "w", encoding="utf-8") as f:
+    # Gravação do relatório técnico no caminho correto
+    with open(ARQUIVO_SAIDA, "w", encoding="utf-8") as f:
         f.write("RELATÓRIO TÉCNICO DE BASELINE - SEMANA 1\n")
         f.write("-" * 40 + "\n")
-        f.write(f"Sistema: Painel Analítico ENEM 2025 (SQLite)\n")
-        f.write(f"Operação: Agregação analítica e cálculo de médias por UF (GROUP BY)\n")
+        f.write("Sistema: Painel Analítico ENEM 2025 (SQLite)\n")
+        f.write("Operação: Agregação analítica e cálculo de médias por UF (GROUP BY)\n")
         f.write(f"Tamanho dos Dados: {meta['total_linhas']:,} registros ({meta['tamanho_mb']} MB)\n")
         f.write(f"Ambiente: {meta['cpu']} | {meta['so']}\n")
         f.write(f"Amostras (N): {N_EXECUCOES}\n")
         f.write(f"Tempo Total: {tempo_total:.4f} s\n")
         f.write(f"Tempo Médio (Baseline): {tempo_medio_ms:.2f} ms por operação\n")
 
-    print("\nArquivo 'baseline_dados.txt' gerado com sucesso!")
+    print(f"\nArquivo salvo com sucesso em: '{ARQUIVO_SAIDA}'")
 
 if __name__ == "__main__":
     executar_medicao()
