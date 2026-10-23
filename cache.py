@@ -1,9 +1,7 @@
 import json
 import unicodedata
-import redis
-
-# Conecta ao Redis que subiu no Docker na porta 6379
 try:
+    import redis
     cliente_redis = redis.Redis(
         host="localhost",
         port=6379,
@@ -37,7 +35,7 @@ def buscar_com_cache(chave: str, funcao_busca_sqlite, ttl_segundos: int = 86400)
         if dados_em_cache is not None:
             # Cache HIT: retorno instantâneo da memória RAM
             return json.loads(dados_em_cache), "REDIS (HIT)"
-    except redis.RedisError:
+    except Exception:
         pass
 
     # Cache MISS: consulta na fonte da verdade (SQLite)
@@ -46,7 +44,7 @@ def buscar_com_cache(chave: str, funcao_busca_sqlite, ttl_segundos: int = 86400)
     # Grava o resultado no Redis com TTL de segurança
     try:
         cliente_redis.setex(chave, ttl_segundos, json.dumps(dados_banco))
-    except redis.RedisError:
+    except Exception:
         pass
 
     return dados_banco, "SQLITE (MISS)"
@@ -57,7 +55,7 @@ def invalidar_chaves(chaves: list):
         return
     try:
         cliente_redis.delete(*chaves)
-    except redis.RedisError:
+    except Exception:
         pass
 
 def limpar_todo_cache():
@@ -68,5 +66,5 @@ def limpar_todo_cache():
         chaves = cliente_redis.keys("enem:*")
         if chaves:
             cliente_redis.delete(*chaves)
-    except redis.RedisError:
+    except Exception:
         pass
